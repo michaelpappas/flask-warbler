@@ -4,10 +4,10 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import and_
+from sqlalchemy import or_
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, DEFAULT_IMAGE_URL, DEFAULT_HEADER_IMAGE_URL
 
 load_dotenv()
 
@@ -31,18 +31,22 @@ connect_db(app)
 ##############################################################################
 # User signup/login/logout
 
-
+#add another before request for csrf
 @app.before_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-        g.csrf_form = CSRFProtectionForm()
 
     else:
         g.user = None
-        g.csrf_form = None
+
+@app.before_request
+def generate_CSRF_form():
+    """ instantiates CSRF form """
+
+    g.csrf_form = CSRFProtectionForm()
 
 
 def do_login(user):
@@ -121,14 +125,13 @@ def login():
 def logout():
     """Handle logout of user and redirect to homepage."""
 
-    form = g.csrf_form
 
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
 
-    if form.validate_on_submit():
-        session.pop("curr_user", None)
-        breakpoint()
+    if g.csrf_form.validate_on_submit() and g.user:
+        do_logout()
+
     return redirect('/')
 
 
@@ -160,40 +163,37 @@ def list_users():
 def show_user(user_id):
     """Show user profile."""
 
-    form = g.csrf_form
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
 
-    return render_template('users/show.html', user=user, form=form)
+    return render_template('users/show.html', user=user)
 
 
 @app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
 
-    form = g.csrf_form
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user, form=form)
+    return render_template('users/following.html', user=user)
 
 
 @app.get('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
 
-    form = g.csrf_form
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user, form=form)
+    return render_template('users/followers.html', user=user)
 
 
 @app.post('/users/follow/<int:follow_id>')
@@ -236,18 +236,18 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
+    if not g.user:
+        return redirect("/")
 
     form = EditUserForm(obj=g.user)
-    # validate user
 
     if form.validate_on_submit():
-
-        g.user.username = form.data.get("username", g.user.username)
-        g.user.email = form.data.get("email", g.user.email)
-        g.user.image_url = form.data.get("image_url", g.user.image_url)
-        g.user.header_image_url = form.data.get("header_image_url",
-            g.user.header_image_url)
-        g.user.bio = form.data.get("bio", g.user.bio)
+        g.user.username = form.username.data
+        g.user.email = form.email.data
+        g.user.image_url = form.image_url.data or DEFAULT_IMAGE_URL
+        g.user.header_image_url = form.header_image_url.data or DEFAULT_HEADER_IMAGE_URL
+        g.user.bio = form.bio.data
+        g.user.location = form.location.data
 
         if not User.authenticate(g.user.username, form.data.get("password")):
             form.password.errors = ["Incorrect password"]
@@ -345,19 +345,22 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-    breakpoint()
-    form = g.csrf_form
+
     if g.user:
+        all_messages = Message.query.all()
+        list_of_messages = [ msg for msg in all_messages
+            if msg.user_id in g.user.followers
+            or msg.user_id == g.user.id]
+
         messages = (Message
                     .query
+                    .filter(Message.user_id in list_of_messages)
                     .order_by(Message.timestamp.desc())
-                    # .filter(Message.user_id == g.user.id)
-                    .filter(Message.user_id in g.user.followers, Message.user_id == g.user.id)
-                    # .filter(Message.user_id in g.user.followers, )
                     .limit(100)
+                    .all()
                     )
 
-        return render_template('home.html', messages=messages, form=form)
+        return render_template('home.html', messages=messages)
 
     else:
         return render_template('home-anon.html')
