@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import and_
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm
 from models import db, connect_db, User, Message
@@ -237,6 +238,7 @@ def profile():
 
 
     form = EditUserForm(obj=g.user)
+    # validate user
 
     if form.validate_on_submit():
 
@@ -248,12 +250,12 @@ def profile():
         g.user.bio = form.data.get("bio", g.user.bio)
 
         if not User.authenticate(g.user.username, form.data.get("password")):
-            flash("Incorrect password")
+            form.password.errors = ["Incorrect password"]
         else:
             db.session.commit()
             return redirect(f"/users/{g.user.id}")
-    else:
-        return render_template("users/edit.html", form=form)
+
+    return render_template("users/edit.html", form=form)
 
 
 @app.post('/users/delete')
@@ -343,13 +345,17 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
+    breakpoint()
     form = g.csrf_form
     if g.user:
         messages = (Message
                     .query
                     .order_by(Message.timestamp.desc())
+                    # .filter(Message.user_id == g.user.id)
+                    .filter(Message.user_id in g.user.followers, Message.user_id == g.user.id)
+                    # .filter(Message.user_id in g.user.followers, )
                     .limit(100)
-                    .all())
+                    )
 
         return render_template('home.html', messages=messages, form=form)
 
