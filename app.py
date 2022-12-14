@@ -126,8 +126,8 @@ def logout():
     # DO NOT CHANGE METHOD ON ROUTE
 
     if form.validate_on_submit():
-        session.pop("username", None)
-
+        session.pop("curr_user", None)
+        breakpoint()
     return redirect('/')
 
 
@@ -159,37 +159,40 @@ def list_users():
 def show_user(user_id):
     """Show user profile."""
 
+    form = g.csrf_form
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
 
-    return render_template('users/show.html', user=user)
+    return render_template('users/show.html', user=user, form=form)
 
 
 @app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
 
+    form = g.csrf_form
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user)
+    return render_template('users/following.html', user=user, form=form)
 
 
 @app.get('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
 
+    form = g.csrf_form
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user)
+    return render_template('users/followers.html', user=user, form=form)
 
 
 @app.post('/users/follow/<int:follow_id>')
