@@ -59,7 +59,15 @@
               <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
               <p>{{ msg.text }}</p>
               {% if msg.user.id != g.user.id %}
-                <i class="bi bi-heart"></i>
+              <form method="POST" action="/messages/{{ msg.id }}/like">
+                <a onclick="this.parentNode.submit();">
+                  {% if msg in g.user.messages_liked %}
+                    <i class="bi bi-heart-fill"></i>
+                  {% else %}
+                    <i class="bi bi-heart"></i>
+                  {% endif%}
+                </a>
+              </form>
               {% endif %}
             </div>
           </li>

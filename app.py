@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm
-from models import db, connect_db, User, Message, Likes, DEFAULT_IMAGE_URL, DEFAULT_HEADER_IMAGE_URL
+from models import db, connect_db, User, Message, Likes, Follows, DEFAULT_IMAGE_URL, DEFAULT_HEADER_IMAGE_URL
 
 load_dotenv()
 
@@ -282,16 +282,16 @@ def changes_message_like_status (message_id):
 
     if like:
         db.session.delete(like)
-        db.session.commit()
 
     else:
         message = Message.query.get_or_404(message_id)
         g.user.messages_liked.append(message)
 
-        db.session.commit()
+    db.session.commit()
 
     return redirect(f'/users/{ g.user.id }/likes')
 
+# need to determine where we are performing the operation
 
 @app.post('/users/delete')
 def delete_user():
@@ -379,13 +379,13 @@ def like_message(message_id):
     like = Likes.query.get((message_id, g.user.id)) or None
 
     if like:
-        db.session.delete(like)
-        db.session.commit()
+        db.session.delete(like) #leverage g.user to remove the liked_message
+
     else:
         message = Message.query.get_or_404(message_id)
         g.user.messages_liked.append(message)
 
-        db.session.commit()
+    db.session.commit()
 
     return redirect(f"/messages/{message_id}")
 
@@ -403,7 +403,7 @@ def homepage():
     """
 
     if g.user:
-        followers_ids = [user.id for user in g.user.followers] + [g.user.id]
+        followers_ids = [user.id for user in g.user.following] + [g.user.id]
         # all_messages = Message.query.all()
         # list_of_messages = [ msg for msg in all_messages
         #     if msg.user_id in g.user.followers
@@ -417,6 +417,7 @@ def homepage():
                     .limit(100)
                     .all()
                     )
+        breakpoint()
         return render_template('home.html', messages=messages)
 
     else:
