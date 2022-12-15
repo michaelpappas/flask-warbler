@@ -104,7 +104,7 @@ class UserModelTestCase(TestCase):
         self.assertIsInstance(User.query.get(user.id), User)
 
     def test_failed_new_user(self):
-
+        """ Tests that an error will be thrown when a duplicate user is created"""
         user = User.signup(username="new_user", email="new@gmail.com",
             password="newpassword")
 
@@ -114,3 +114,23 @@ class UserModelTestCase(TestCase):
         db.session.add_all([user, user2])
 
         self.assertRaises(IntegrityError, db.session.commit)
+
+    def test_user_auth(self):
+        """ Tests that the authenticate User class method works as expected """
+        u1 = User.query.get(self.u1_id)
+        auth = User.authenticate(u1.username, 'password')
+
+        self.assertIsInstance(auth, User)
+
+    def test_user_fail_pw_auth(self):
+        """ Tests that the authenticate User class method doesn't works with incorrect password """
+        u1 = User.query.get(self.u1_id)
+        auth = User.authenticate(u1.username, 'taco')
+
+        self.assertNotIsInstance(auth, User)
+
+    def test_user_fail_un_auth(self):
+        """ Tests that the authenticate User class method doesn't works with incorrect username """
+        auth = User.authenticate('username', 'password')
+
+        self.assertNotIsInstance(auth, User)

@@ -401,7 +401,7 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-    breakpoint()
+
     if g.user:
         followers_ids = [user.id for user in g.user.following] + [g.user.id]
         # all_messages = Message.query.all()
@@ -417,7 +417,7 @@ def homepage():
                     .limit(100)
                     .all()
                     )
-        breakpoint()
+
         return render_template('home.html', messages=messages)
 
     else:
