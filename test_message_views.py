@@ -19,7 +19,7 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 # Now we can import app
 
-from app import app, CURR_USER_KEY
+from app import app, CURR_USER_KEY, do_logout, do_login, session
 
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
@@ -56,6 +56,47 @@ class MessageBaseViewTestCase(TestCase):
         self.m1_id = m1.id
 
         self.client = app.test_client()
+
+
+    def test_unauth_access_home(self):
+        """ Testing that unlogged in user sees sign up banner """
+        with self.client as c:
+
+            resp = c.get("/", follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertIn("<h4>New to Warbler?</h4>", html)
+
+    def test_unauth_add_msg(self):
+        """ Testing that unlogged in user cant add message """
+        with self.client as c:
+
+            resp = c.post("/messages/new", data={
+                "text" : "random"
+            }, follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertIn("Access unauthorized.", html)
+
+    def test_unauth_view_add_form(self):
+        """ Testing that unlogged user cannot see add msg form """
+
+        with self.client as c:
+
+            resp = c.get("/messages/new", follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertIn("Access unauthorized.", html)
+
+
+
+
+
+
+
 
 
 class MessageAddViewTestCase(MessageBaseViewTestCase):
