@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm
-from models import db, connect_db, User, Message, DEFAULT_IMAGE_URL, DEFAULT_HEADER_IMAGE_URL
+from models import db, connect_db, User, Message, Likes, DEFAULT_IMAGE_URL, DEFAULT_HEADER_IMAGE_URL
 
 load_dotenv()
 
@@ -347,19 +347,20 @@ def homepage():
     """
 
     if g.user:
-        all_messages = Message.query.all()
-        list_of_messages = [ msg for msg in all_messages
-            if msg.user_id in g.user.followers
-            or msg.user_id == g.user.id]
+        followers_ids = [user.id for user in g.user.followers] + [g.user.id]
+        # all_messages = Message.query.all()
+        # list_of_messages = [ msg for msg in all_messages
+        #     if msg.user_id in g.user.followers
+        #     or msg.user_id == g.user.id]
+        # breakpoint()
 
         messages = (Message
                     .query
-                    .filter(Message.user_id in list_of_messages)
+                    .filter(Message.user_id.in_(followers_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all()
                     )
-
         return render_template('home.html', messages=messages)
 
     else:
