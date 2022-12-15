@@ -21,7 +21,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql:///warbler"))
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
@@ -264,12 +264,33 @@ def likes_page(user_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    all_messages = Message.query.all()
 
-    user_likes = Likes.query.filter(user_id == user_id).all()
-    liked_messages = [Message.query.get(like.message_id) for like in user_likes]
+    liked_messages = [Message.query.get(like.id) for like in g.user.messages_liked]
 
     return render_template('users/liked-messages.html', messages = liked_messages, user=g.user)
+
+@app.post('/users/<int:message_id>/like')
+def changes_message_like_status (message_id):
+    """ Likes/unlikes message from users liked-messages page
+    and redirects to likes page """
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    like = Likes.query.get((message_id, g.user.id)) or None
+
+    if like:
+        db.session.delete(like)
+        db.session.commit()
+
+    else:
+        message = Message.query.get_or_404(message_id)
+        g.user.messages_liked.append(message)
+
+        db.session.commit()
+
+    return redirect(f'/users/{ g.user.id }/likes')
 
 
 @app.post('/users/delete')
