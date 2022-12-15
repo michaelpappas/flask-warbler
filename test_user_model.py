@@ -7,6 +7,7 @@
 
 import os
 from unittest import TestCase
+from sqlalchemy.exc import IntegrityError
 
 from models import db, User, Message, Follows, connect_db
 
@@ -33,6 +34,7 @@ db.create_all()
 
 class UserModelTestCase(TestCase):
     def setUp(self):
+        """ sets up the test environment """
         User.query.delete()
 
         u1 = User.signup("u1", "u1@email.com", "password", None)
@@ -45,19 +47,70 @@ class UserModelTestCase(TestCase):
         self.client = app.test_client()
 
     def tearDown(self):
+        """ Rolls back the test environment and actions made in tests """
         db.session.rollback()
 
     def test_user_model(self):
+        """ Tests that the user has no messages/followers """
         u1 = User.query.get(self.u1_id)
 
         # User should have no messages & no followers
         self.assertEqual(len(u1.messages), 0)
         self.assertEqual(len(u1.followers), 0)
 
-    # def test_is_following(self):
-    #     u1 = User.query.get(self.u1_id)
-    #     u2 = User.query.get(self.u2_id)
+    def test_u1_is_following(self):
+        """ Tests that u1 is following u2 and modifying the Follows table """
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
 
-    #     u1.is_following(u2)
+        u1.following.append(u2)
+        db.session.commit()
 
-    #     self.assertEqual(Follows.query.get((user_being_followed_id = u2, user_following_id = u1)),  )
+        self.assertTrue(u1.is_following(u2))
+
+    def test_is_not_following(self):
+        """ Tests that u1 is not following u2 """
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+
+        self.assertFalse(u1.is_following(u2))
+
+    def test_u2_is_following(self):
+        """ Tests that u2 is following u1 and modifying the Follows table """
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+
+        u1.followers.append(u2)
+        db.session.commit()
+
+        self.assertTrue(u1.is_followed_by(u2))
+
+    def test_u2_is_not_following(self):
+        """ Tests that u2 is not following u1 """
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+
+        self.assertFalse(u1.is_followed_by(u2))
+
+    def test_create_new_user(self):
+        """ Tests that a new user is created on signup """
+
+        user = User.signup(username="new_user", email="new@gmail.com",
+            password="newpassword")
+
+        db.session.add(user)
+        db.session.commit()
+
+        self.assertIsInstance(User.query.get(user.id), User)
+
+    def test_failed_new_user(self):
+
+        user = User.signup(username="new_user", email="new@gmail.com",
+            password="newpassword")
+
+        user2 = User.signup(username="new_user", email="new@gmail.com",
+            password="newpassword")
+
+        db.session.add_all([user, user2])
+
+        self.assertRaises(IntegrityError, db.session.commit)

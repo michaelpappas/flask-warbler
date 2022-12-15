@@ -269,27 +269,27 @@ def likes_page(user_id):
 
     return render_template('users/liked-messages.html', messages = liked_messages, user=g.user)
 
-@app.post('/users/<int:message_id>/like')
-def changes_message_like_status (message_id):
-    """ Likes/unlikes message from users liked-messages page
-    and redirects to likes page """
+# @app.post('/users/<int:message_id>/like')
+# def changes_message_like_status (message_id):
+#     """ Likes/unlikes message from users liked-messages page
+#     and redirects to likes page """
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+#     if not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
 
-    like = Likes.query.get((message_id, g.user.id)) or None
+#     like = Likes.query.get((message_id, g.user.id)) or None
 
-    if like:
-        db.session.delete(like)
+#     if like:
+#         db.session.delete(like)
 
-    else:
-        message = Message.query.get_or_404(message_id)
-        g.user.messages_liked.append(message)
+#     else:
+#         message = Message.query.get_or_404(message_id)
+#         g.user.messages_liked.append(message)
 
-    db.session.commit()
+#     db.session.commit()
 
-    return redirect(f'/users/{ g.user.id }/likes')
+#     return redirect(f'/users/{ g.user.id }/likes')
 
 # need to determine where we are performing the operation
 
@@ -401,7 +401,7 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-
+    breakpoint()
     if g.user:
         followers_ids = [user.id for user in g.user.following] + [g.user.id]
         # all_messages = Message.query.all()
