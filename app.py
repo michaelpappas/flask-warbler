@@ -333,6 +333,21 @@ def delete_message(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+@app.post('/messages/<int:message_id>/like')
+def like_message(message_id):
+    """ adds message to likes of a user """
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    message = Message.query.get_or_404(message_id)
+    g.user.messages_liked.append(message)
+
+    db.session.commit()
+
+    return redirect(f"/messages/{message_id}")
+
 
 ##############################################################################
 # Homepage and error pages

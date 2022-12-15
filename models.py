@@ -192,9 +192,9 @@ class Message(db.Model):
     users_liked = db.relationship(
         "User",
         secondary="likes",
-        primaryjoin=(Likes.message_id == id),
-        secondaryjoin=(Likes.user_id == id),
-        backref="messages_liked",
+        # primaryjoin=(Likes.message_id == id),
+        # secondaryjoin=(Likes.user_id == id),
+        backref="messages_liked"
     )
 
 

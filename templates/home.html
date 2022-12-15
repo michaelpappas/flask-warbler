@@ -58,7 +58,7 @@
               <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
               <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
               <p>{{ msg.text }}</p>
-              {% if not msg.user.id = g.user.id %}
+              {% if msg.user.id != g.user.id %}
                 <i class="bi bi-heart"></i>
               {% endif %}
             </div>
