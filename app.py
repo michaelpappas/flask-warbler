@@ -257,6 +257,20 @@ def profile():
 
     return render_template("users/edit.html", form=form)
 
+@app.get('/users/<int:user_id>/likes')
+def likes_page(user_id):
+    """ Shows a page that displays all liked messages by user """
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    all_messages = Message.query.all()
+
+    user_likes = Likes.query.filter(user_id == user_id).all()
+    liked_messages = [Message.query.get(like.message_id) for like in user_likes]
+
+    return render_template('users/liked-messages.html', messages = liked_messages, user=g.user)
+
 
 @app.post('/users/delete')
 def delete_user():
@@ -341,10 +355,16 @@ def like_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    message = Message.query.get_or_404(message_id)
-    g.user.messages_liked.append(message)
+    like = Likes.query.get((message_id, g.user.id)) or None
 
-    db.session.commit()
+    if like:
+        db.session.delete(like)
+        db.session.commit()
+    else:
+        message = Message.query.get_or_404(message_id)
+        g.user.messages_liked.append(message)
+
+        db.session.commit()
 
     return redirect(f"/messages/{message_id}")
 
