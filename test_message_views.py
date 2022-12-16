@@ -19,7 +19,7 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 # Now we can import app
 
-from app import app, CURR_USER_KEY, do_logout, do_login, session
+from app import app, CURR_USER_KEY, do_logout, do_login, session, g
 
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
@@ -90,6 +90,32 @@ class MessageBaseViewTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertIn("Access unauthorized.", html)
+
+    def test_unauth_delete_msg(self):
+        """ Testing that unlogged in user cant add message """
+        with self.client as c:
+
+            resp = c.post(f"/messages/{self.m1_id}/delete",
+                            follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertIn("Access unauthorized.", html)
+
+    def test_auth_access_home(self):
+        """ Testing that logged in user sees user page """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            user = User.query.get(self.u1_id)
+
+
+            resp = c.get("/", follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertIn(f"<p>@{user.username}</p>", html)
 
 
 

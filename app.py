@@ -408,7 +408,6 @@ def homepage():
         # list_of_messages = [ msg for msg in all_messages
         #     if msg.user_id in g.user.followers
         #     or msg.user_id == g.user.id]
-        # breakpoint()
 
         messages = (Message
                     .query
