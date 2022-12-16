@@ -46,6 +46,7 @@ class MessageBaseViewTestCase(TestCase):
         User.query.delete()
 
         u1 = User.signup("u1", "u1@email.com", "password", None)
+        u2 = User.signup("u2", "u2@email.com", "password", None)
         db.session.flush()
 
         m1 = Message(text="m1-text", user_id=u1.id)
@@ -53,76 +54,14 @@ class MessageBaseViewTestCase(TestCase):
         db.session.commit()
 
         self.u1_id = u1.id
+        self.u2_id = u2.id
         self.m1_id = m1.id
 
         self.client = app.test_client()
 
-
-    def test_unauth_access_home(self):
-        """ Testing that unlogged in user sees sign up banner """
-        with self.client as c:
-
-            resp = c.get("/", follow_redirects=True)
-
-            html = resp.get_data(as_text=True)
-
-            self.assertIn("<h4>New to Warbler?</h4>", html)
-
-    def test_unauth_add_msg(self):
-        """ Testing that unlogged in user cant add message """
-        with self.client as c:
-
-            resp = c.post("/messages/new", data={
-                "text" : "random"
-            }, follow_redirects=True)
-
-            html = resp.get_data(as_text=True)
-
-            self.assertIn("Access unauthorized.", html)
-
-    def test_unauth_view_add_form(self):
-        """ Testing that unlogged user cannot see add msg form """
-
-        with self.client as c:
-
-            resp = c.get("/messages/new", follow_redirects=True)
-
-            html = resp.get_data(as_text=True)
-
-            self.assertIn("Access unauthorized.", html)
-
-    def test_unauth_delete_msg(self):
-        """ Testing that unlogged in user cant add message """
-        with self.client as c:
-
-            resp = c.post(f"/messages/{self.m1_id}/delete",
-                            follow_redirects=True)
-
-            html = resp.get_data(as_text=True)
-
-            self.assertIn("Access unauthorized.", html)
-
-    def test_auth_access_home(self):
-        """ Testing that logged in user sees user page """
-        with self.client as c:
-            with c.session_transaction() as sess:
-                sess[CURR_USER_KEY] = self.u1_id
-
-            user = User.query.get(self.u1_id)
-
-
-            resp = c.get("/", follow_redirects=True)
-
-            html = resp.get_data(as_text=True)
-
-            self.assertIn(f"<p>@{user.username}</p>", html)
-
-
-
-
-
-
-
+    # def tearDown(self):
+    #     """ Rolls back the test environment and actions made in tests """
+    #     db.session.rollback()
 
 
 class MessageAddViewTestCase(MessageBaseViewTestCase):
@@ -140,3 +79,147 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
             self.assertEqual(resp.status_code, 302)
 
             Message.query.filter_by(text="Hello").one()
+
+    def test_unauth_access_home(self):
+        """ Testing that unlogged in user sees sign up banner """
+        with self.client as c:
+
+            resp = c.get("/", follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("<h4>New to Warbler?</h4>", html)
+
+    def test_unauth_add_msg(self):
+        """ Testing that unlogged in user cant add message """
+        with self.client as c:
+
+            resp = c.post("/messages/new", data={
+                "text" : "random"
+            }, follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized.", html)
+
+    def test_unauth_view_add_form(self):
+        """ Testing that unlogged user cannot see add msg form """
+
+        with self.client as c:
+
+            resp = c.get("/messages/new", follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized.", html)
+
+    def test_unauth_delete_msg(self):
+        """ Testing that unlogged in user cant add message """
+        with self.client as c:
+
+            resp = c.post(f"/messages/{self.m1_id}/delete",
+                            follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized.", html)
+
+    def test_auth_access_home(self):
+        """ Testing that logged in user sees user page """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            user = User.query.get(self.u1_id)
+
+            resp = c.get("/", follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(f"<p>@{user.username}</p>", html)
+
+    def test_auth_follower_page(self):
+        """ Testing that logged in user can access followers page """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            user = User.query.get(self.u1_id)
+            user2 = User.query.get(self.u2_id)
+            user.followers.append(user2)
+            db.session.commit()
+
+            resp = c.get(f"/users/{self.u1_id}/followers")
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(f"<p>@{ user2.username }</p>", html)
+
+    def test_auth_following_page(self):
+        """ Testing that logged in user can access following page """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            user = User.query.get(self.u1_id)
+            user2 = User.query.get(self.u2_id)
+            user.followers.append(user2)
+            db.session.commit()
+
+            resp = c.get(f"/users/{ user2.id }/following")
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(f"<p>@{ user.username }</p>", html)
+
+    def test_auth_view_add_msg(self):
+        """ Testing that logged in user can see add msg form """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get("/messages/new", follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Add my message!</button>", html)
+
+    def test_auth_add_msg(self):
+        """ Testing that logged in user can add message """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.post("/messages/new", data={
+                "text" : "random"
+            }, follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("random", html)
+
+    def test_auth_delete_msg(self):
+        """ Testing that unlogged in user cant add message """
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            message = Message.query.get(self.m1_id)
+
+            resp = c.post(f"/messages/{self.m1_id}/delete",
+                            follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<p class="small">Messages</p>', html)
+            self.assertNotIn(message.text, html)
