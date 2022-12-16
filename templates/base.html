@@ -52,7 +52,8 @@
             <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
           </a>
         </li>
-        <li><a href="/messages/new" id="new-message">New Message</a></li>
+        <li><a href="/messages/new" id="new-message" data-toggle="modal"
+          data-target="#exampleModal">New Message</a></li>
         <form action="/logout" method="POST">
           {{ g.csrf_form.hidden_tag() }}
           <li><button class="btn btn-link">Log out</button></li>

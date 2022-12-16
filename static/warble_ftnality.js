@@ -24,16 +24,18 @@ async function alterLikeStatus(evt) {
   }
 }
 
-async function newMsg(evt){
-  const resp = await axios.get(`/messages/new`)
-}
+// async function newMsg(evt){
+//   const resp = await axios.get(`/messages/new`)
 
-async function postMsg(){
+// }
 
-}
+// function displayFormInputs(form)
+
+// async function postMsg(){
+
+// }
 
 
 $likesBtn.on("click", alterLikeStatus)
-$newMessageLink.on("click", newMsg)
-$submitMsg.on("submit", postMsg)
-
+// $newMessageLink.on("click", newMsg)
+// $submitMsg.on("submit", postMsg)
