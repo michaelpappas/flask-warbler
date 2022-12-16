@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, render_template, request, flash, redirect, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
@@ -334,8 +334,8 @@ def add_message():
         db.session.commit()
 
         return redirect(f"/users/{g.user.id}")
-
-    return render_template('messages/create.html', form=form)
+    return jsonify(csrf=g.csrf_form)
+    # return render_template('messages/create.html', form=form)
 
 
 @app.get('/messages/<int:message_id>')
@@ -377,7 +377,7 @@ def like_message(message_id):
         return redirect("/")
 
     like = Likes.query.get((message_id, g.user.id)) or None
-
+    breakpoint()
     if like:
         db.session.delete(like) #leverage g.user to remove the liked_message
 
@@ -388,7 +388,7 @@ def like_message(message_id):
     db.session.commit()
 
     # returning successful status code
-    return redirect("/")
+    return jsonify(messageID = message_id)
 
 
 ##############################################################################

@@ -8,11 +8,19 @@ const $likesBtn = $(".heart-icon")
  * current like status
 */
 async function alterLikeStatus(evt) {
-  evt.preventDefault();
+  evt.stopImmediatePropagation();
   console.log(evt)
-  $id = $(evt.target).attr("id")
-  console.log($id)
-  const resp = await axios.post(`/messages/{$id}/like`)
+  const id = $(evt.target).attr("id")
+  const resp = await axios.post(`/messages/${id}/like`)
+
+  if (resp.status == 200){
+    if($(evt.target).attr("class") === "heart-icon bi bi-heart-fill"){
+      $(evt.target).attr("class", "heart-icon bi bi-heart")
+    }
+    else{
+      $(evt.target).attr("class", "heart-icon bi bi-heart-fill")
+    }
+  }
 }
 
 
