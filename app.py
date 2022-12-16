@@ -387,7 +387,8 @@ def like_message(message_id):
 
     db.session.commit()
 
-    return redirect(f"/messages/{message_id}")
+    # returning successful status code
+    return redirect("/")
 
 
 ##############################################################################
