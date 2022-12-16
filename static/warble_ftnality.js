@@ -2,6 +2,7 @@
 
 
 const $likesBtn = $(".heart-icon")
+const $newMessageLink = $("#new-message")
 
 
 /** changes like button appearance depending on
@@ -23,5 +24,16 @@ async function alterLikeStatus(evt) {
   }
 }
 
+async function newMsg(evt){
+  const resp = await axios.get(`/messages/new`)
+}
+
+async function postMsg(){
+
+}
+
 
 $likesBtn.on("click", alterLikeStatus)
+$newMessageLink.on("click", newMsg)
+$submitMsg.on("submit", postMsg)
+
