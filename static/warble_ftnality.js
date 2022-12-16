@@ -3,6 +3,9 @@
 
 const $likesBtn = $(".heart-icon")
 const $newMessageLink = $("#new-message")
+const $submitMsgBtn = $("#create-msg")
+const $newMsgForm = $("#new-message-form")
+
 
 
 /** changes like button appearance depending on
@@ -24,18 +27,23 @@ async function alterLikeStatus(evt) {
   }
 }
 
-// async function newMsg(evt){
-//   const resp = await axios.get(`/messages/new`)
-
-// }
 
 // function displayFormInputs(form)
 
-// async function postMsg(){
+// /** post add msg form */
+// async function postMsg(evt){
+//   evt.stopImmediatePropagation();
+//   console.log(evt)
+//   const $csrfToken = $(evt.target).find('#csrf_token');
+//   debugger
+//   // const text = $newMsgForm.val()
+//   // const resp = await axios.post("/messages/new", data={
+//   //   "csrf_token" : $csrfToken.val(),
+//   //   "text" :
 
 // }
 
 
 $likesBtn.on("click", alterLikeStatus)
 // $newMessageLink.on("click", newMsg)
-// $submitMsg.on("submit", postMsg)
+// $submitMsgBtn.on("submit", postMsg)

@@ -338,7 +338,8 @@ def add_message():
         return redirect(f"/users/{g.user.id}")
 
     # return jsonify(csrf=g.csrf_form)
-    return render_template('/messages/create.html', show_predictions_modal=True, form=form)
+    #  show_predictions_modal=True, form=form
+    return render_template('messages/create.html', form=form)
 
 
 @app.get('/messages/<int:message_id>')
@@ -380,7 +381,6 @@ def like_message(message_id):
         return redirect("/")
 
     like = Likes.query.get((message_id, g.user.id)) or None
-    breakpoint()
     if like:
         db.session.delete(like) #leverage g.user to remove the liked_message
 
