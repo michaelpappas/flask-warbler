@@ -108,6 +108,15 @@ class User(db.Model):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
     @classmethod
+    def hash_password(cls, password):
+        """ Returns hashed password for changing user password"""
+
+        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+
+        return hashed_pwd
+
+
+    @classmethod
     def signup(cls, username, email, password, image_url=DEFAULT_IMAGE_URL):
         """Sign up user.
 

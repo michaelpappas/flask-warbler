@@ -7,7 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 
 
-from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm
+
+from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm, ChangePasswordForm
 from models import db, connect_db, User, Message, Likes, Follows, DEFAULT_IMAGE_URL, DEFAULT_HEADER_IMAGE_URL
 
 load_dotenv()
@@ -256,6 +257,36 @@ def profile():
         else:
             db.session.commit()
             return redirect(f"/users/{g.user.id}")
+
+    return render_template("users/edit.html", form=form)
+
+@app.route('/users/changepwd', methods=["GET", "POST"])
+def change_pwd():
+    """Change the password for current user."""
+
+    if not g.user:
+        return redirect("/")
+
+    form = ChangePasswordForm(obj=g.user)
+
+    if form.validate_on_submit():
+
+
+        if not User.authenticate(g.user.username, form.data.get("password")):
+            breakpoint()
+            form.password.errors = ["Incorrect password"]
+        else:
+            password1 = form.New_password1.data
+            password2 = form.New_password2.data
+            breakpoint()
+            if not password1 == password2:
+                form.New_password2.errors = ["New passwords do not match."]
+
+            else:
+                g.user.password = User.hash_password(password1)
+
+                db.session.commit()
+                return redirect(f"/users/{g.user.id}")
 
     return render_template("users/edit.html", form=form)
 
