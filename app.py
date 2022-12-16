@@ -5,7 +5,6 @@ from flask import Flask, render_template, request, flash, redirect, session, g, 
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
-from flask_modals import Modal
 
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm
@@ -16,7 +15,7 @@ load_dotenv()
 CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
-modal = Modal(app)
+
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
@@ -339,7 +338,7 @@ def add_message():
         return redirect(f"/users/{g.user.id}")
 
     # return jsonify(csrf=g.csrf_form)
-    return render_template('messages/create.html', form=form)
+    return render_template('/messages/create.html', show_predictions_modal=True, form=form)
 
 
 @app.get('/messages/<int:message_id>')
