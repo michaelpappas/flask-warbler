@@ -41,7 +41,7 @@ db.create_all()
 app.config['WTF_CSRF_ENABLED'] = False
 
 
-class MessageBaseViewTestCase(TestCase):
+class UserViewTestCase(TestCase):
     def setUp(self):
         User.query.delete()
 

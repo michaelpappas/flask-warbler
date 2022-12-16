@@ -32,7 +32,7 @@ db.drop_all()
 db.create_all()
 
 
-class UserModelTestCase(TestCase):
+class MessageModelTestCase(TestCase):
     def setUp(self):
         """ sets up the test environment """
         User.query.delete()

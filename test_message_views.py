@@ -146,7 +146,8 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
             self.assertIn("random", html)
 
     def test_auth_delete_msg(self):
-        """ Testing that unlogged in user cant add message """
+        """ Testing that logged in user can delete a message """
+
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1_id
@@ -158,12 +159,16 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
 
             html = resp.get_data(as_text=True)
 
+            deleted_message = Message.query.get(self.m1_id)
+
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<p class="small">Messages</p>', html)
             self.assertNotIn(message.text, html)
+            self.assertIsNone(deleted_message)
 
     def test_auth_other_dmsg_delete(self):
         """ Testing that logged in user can't delete other user's message """
+
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u2_id

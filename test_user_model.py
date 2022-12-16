@@ -59,7 +59,7 @@ class UserModelTestCase(TestCase):
         self.assertEqual(len(u1.messages), 0)
         self.assertEqual(len(u1.followers), 0)
 
-    def test_u1_is_following(self):
+    def test_is_following(self):
         """ Tests that u1 is following u2 and modifying the Follows table """
 
         u1 = User.query.get(self.u1_id)
@@ -78,7 +78,7 @@ class UserModelTestCase(TestCase):
 
         self.assertFalse(u1.is_following(u2))
 
-    def test_u2_is_following(self):
+    def test_is_followed_by(self):
         """ Tests that u2 is following u1 and modifying the Follows table """
 
         u1 = User.query.get(self.u1_id)
@@ -108,8 +108,9 @@ class UserModelTestCase(TestCase):
 
         self.assertIsInstance(User.query.get(user.id), User)
 
-    def test_failed_new_user(self):
+    def test_signup_duplicate(self):
         """ Tests that an error will be thrown when a duplicate user is created"""
+
         user = User.signup(username="new_user", email="new@gmail.com",
             password="newpassword")
 
