@@ -52,6 +52,7 @@ class UserModelTestCase(TestCase):
 
     def test_user_model(self):
         """ Tests that the user has no messages/followers """
+
         u1 = User.query.get(self.u1_id)
 
         # User should have no messages & no followers
@@ -60,6 +61,7 @@ class UserModelTestCase(TestCase):
 
     def test_u1_is_following(self):
         """ Tests that u1 is following u2 and modifying the Follows table """
+
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
 
@@ -70,6 +72,7 @@ class UserModelTestCase(TestCase):
 
     def test_is_not_following(self):
         """ Tests that u1 is not following u2 """
+
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
 
@@ -77,6 +80,7 @@ class UserModelTestCase(TestCase):
 
     def test_u2_is_following(self):
         """ Tests that u2 is following u1 and modifying the Follows table """
+
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
 
@@ -87,6 +91,7 @@ class UserModelTestCase(TestCase):
 
     def test_u2_is_not_following(self):
         """ Tests that u2 is not following u1 """
+
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
 
