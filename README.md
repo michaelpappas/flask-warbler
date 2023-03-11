@@ -66,7 +66,7 @@ To run the backend run "flask run -p 5000".
  |--messages.csv            # messages csv file
  |--users.csv               # users csv file
 
- \static                    # Generator folder
+ \static                    # static files folder
  |--/images                 # images folder
  |--/stylesheets            # stylesheets folder
  |--/templates              # jinja templates folder
