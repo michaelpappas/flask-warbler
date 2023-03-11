@@ -1,14 +1,7 @@
-# pixly-backend
-Pair Programming with Michael Pappas (@michaelpappas)
-
-
-
-
-# Pixly Backend
 
 # RESTful API Flask
 
-A RESTful image uploading API using Flask and Postgresql
+A RESTful twitter clone API using Flask and Postgresql
 
 ## Manual Installation
 
@@ -66,12 +59,12 @@ To run the backend run "flask run -p 5000".
  |--test_user_model.py      # user model tests
  |--test_user_views.py      # user views tests
 
- \generator                 # Generator folder
- |--create_csvs.py          # todo
- |--follows.csv             # todo
- |--helpers.py              # todo
- |--messages.csv            # todo
- |--users.csv               # todo
+ \generator                 # Generator folder to seed db
+ |--create_csvs.py          # generates random user profiles
+ |--follows.csv             # follows csv file
+ |--helpers.py              # helper functions for seed data creation
+ |--messages.csv            # messages csv file
+ |--users.csv               # users csv file
 
  \static                    # Generator folder
  |--/images                 # images folder
