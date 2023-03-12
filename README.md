@@ -31,14 +31,15 @@ cp .env.example .env
 - [API Endpoints](#api-endpoints)
 
 Development Environment Setup
-## dev-environment
-=============================
+## Dev-environment
 
-You'll need Python3 and PostgreSQL ::
+You'll need Python3 and PostgreSQL
 
+```bash
   python3 -m venv venv
   source venv/bin/activate
   pip3 install -r requirements.txt
+```
 
 Create warbler database in psql with CREATE DATABASE warbler;
 
