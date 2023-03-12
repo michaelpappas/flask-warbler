@@ -41,9 +41,15 @@ You'll need Python3 and PostgreSQL
   pip3 install -r requirements.txt
 ```
 
-Create warbler database in psql with CREATE DATABASE warbler;
+Create warbler database in psql with:
+```sql
+CREATE DATABASE warbler
+```
 
-To run the backend run "flask run -p 5000".
+To run the backend run:
+```bash
+flask run -p 5000
+```
 
 ## Project Structure
 
