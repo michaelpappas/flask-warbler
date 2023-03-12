@@ -43,7 +43,7 @@ You'll need Python3 and PostgreSQL
 
 Create warbler database in psql with:
 ```sql
-CREATE DATABASE warbler
+CREATE DATABASE warbler;
 ```
 
 To run the backend run:
